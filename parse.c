@@ -1,24 +1,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "structs.h"
+#include "gs.h"
 
-mat parse(){
-    
+int dimension(int argc){
+    return (int)sqrt((double)(argc - 1));
 }
 
-int main(int argc, char** argv){
+mat parse(int argc, char** argv, int dim){
+    // printf("%d\n", argc);
+    // printf("%d\n", dim);
 
-    printf("%d\n", argc);
+    // for (int i=1; i<argc; i++){
+    //     printf("%s ", argv[i]);
+    // }
 
-    int dim = (int)sqrt((double)(argc - 1));
-    printf("%d\n", dim);
-
-    for (int i=1; i<argc; i++){
-        printf("%s ", argv[i]);
-    }
-
-    printf("\n");
+    // printf("\n");
 
     mat X = create_matrix(dim);
     int row = -1;
@@ -31,10 +28,14 @@ int main(int argc, char** argv){
         } 
         float val = atof(argv[i]);
         X.vecs[row].vals[mod] = val;
-        printf("%f ", val);
+        // printf("%f ", val);
     }
-    printf("\n\n");
-    print_matrix(X, dim);
-
-    return 0;
+    // printf("\n\n");
+    // print_matrix(X, dim);
+    return X;
 }
+
+// int main(int argc, char** argv){
+//     parse(argc, argv);
+//     return 0;
+// }

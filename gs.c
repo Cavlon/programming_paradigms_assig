@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "structs.h"
+#include "gs.h"
 
 mat create_matrix(int dim){
     mat X;
