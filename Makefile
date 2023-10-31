@@ -1,7 +1,8 @@
 CC=gcc
+DEPS=structs.h
 
-all:  program.c
-	$(CC) -o out program.c
+all:  gs.o parse.c
+	$(CC) -o parse parse.c gs.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $<
