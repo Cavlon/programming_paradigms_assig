@@ -16,4 +16,6 @@ float dot(float* u, float* v, int dim);
 vec proj(float* u, float* v, int dim);
 void copy_vec(float* u, float* v, int dim);
 void sub_vec(float* u, float* v, int dim);
+float get_mu(mat X, mat G, int i, int j, int dim);
+void swap_vecs(float* u, float* v, int dim);
 mat gs(mat X, int dim);

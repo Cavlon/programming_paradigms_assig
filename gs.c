@@ -46,6 +46,20 @@ void sub_vec(float* u, float* v, int dim){
     }
 }
 
+float get_mu(mat X, mat G, int i, int j, int dim){
+    vec u = X.vecs[i];
+    vec v = G.vecs[j];
+    return dot(u.vals, v.vals, dim) / dot(v.vals, v.vals, dim);
+}
+
+void swap_vecs(float* u, float* v, int dim){
+    for (int i=0; i<dim; i++){
+        float temp = u[i];
+        u[i] = v[i];
+        v[i] = temp;
+    }
+}
+
 mat gs(mat X, int dim){
     mat Y = create_matrix(dim);
 
