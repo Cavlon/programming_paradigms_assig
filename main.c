@@ -2,6 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#include "linalg.h"
 #include "gs.h"
 #include "parse.h"
 

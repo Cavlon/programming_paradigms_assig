@@ -1,23 +1,6 @@
 #include <stdlib.h>
-#include <stdio.h>
+#include "linalg.h"
 #include "gs.h"
-
-mat create_matrix(int dim){
-    mat X;
-    X.vecs = malloc(dim * sizeof(vec));
-    for (int i=0; i<dim; i++){
-        X.vecs[i].vals = malloc(dim * sizeof(float));
-    }
-    return X;
-}
-
-float dot(float* u, float* v, int dim){
-    float total = 0;
-    for (int i=0; i<dim; i++){
-        total += u[i] * v[i];
-    }
-    return total;
-}
 
 vec proj(float* u, float* v, int dim){
     float sqr_norm = dot(v, v, dim);
@@ -34,30 +17,10 @@ vec proj(float* u, float* v, int dim){
     return res;
 }
 
-void copy_vec(float* u, float* v, int dim){
-    for (int i=0; i<dim; i++){
-        u[i] = v[i];
-    }
-}
-
-void sub_vec(float* u, float* v, int dim){
-    for (int i=0; i<dim; i++){
-        u[i] -= v[i];
-    }
-}
-
 float get_mu(mat X, mat G, int i, int j, int dim){
     vec u = X.vecs[i];
     vec v = G.vecs[j];
     return dot(u.vals, v.vals, dim) / dot(v.vals, v.vals, dim);
-}
-
-void swap_vecs(float* u, float* v, int dim){
-    for (int i=0; i<dim; i++){
-        float temp = u[i];
-        u[i] = v[i];
-        v[i] = temp;
-    }
 }
 
 mat gs(mat X, int dim){
@@ -72,20 +35,6 @@ mat gs(mat X, int dim){
     }
 
     return Y;
-}
-
-void print_vector(vec X, int dim){
-    for (int i=0; i<dim; i++){
-        printf("%f ", X.vals[i]);
-    }
-}
-
-void print_matrix(mat X, int dim){
-    for (int i=0; i<dim; i++){
-        print_vector(X.vecs[i], dim);
-        printf("\n");
-    }
-    printf("\n");
 }
 
 // int main(){

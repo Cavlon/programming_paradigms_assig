@@ -1,11 +1,11 @@
 CC=gcc
-DEPS=gs.h parse.h
+DEPS=linalg.h gs.h parse.h
 
-all: gs.o parse.o main.c
-	$(CC) -o main main.c gs.o parse.o
+all: linalg.o gs.o parse.o main.c
+	$(CC) -o main main.c linalg.o gs.o parse.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $<
 
 clean:
-	rm -rf main.exe gs.o parse.o
+	rm -rf main.exe linalg.o gs.o parse.o
