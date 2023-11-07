@@ -36,25 +36,3 @@ mat gs(mat X, int dim){
 
     return Y;
 }
-
-// int main(){
-//     int dim = 3;
-//     mat X = create_matrix(dim);
-
-//     X.vecs[0].vals[0] = 1;
-//     X.vecs[0].vals[1] = -1;
-//     X.vecs[0].vals[2] = 1;
-//     X.vecs[1].vals[0] = 1;
-//     X.vecs[1].vals[1] = 0;
-//     X.vecs[1].vals[2] = 1;
-//     X.vecs[2].vals[0] = 1;
-//     X.vecs[2].vals[1] = 1;
-//     X.vecs[2].vals[2] = 2;
-
-//     print_matrix(X, dim);
-
-//     mat G = gs(X, dim);
-//     print_matrix(G, dim);
-
-//     return 0;
-// }

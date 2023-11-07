@@ -8,7 +8,6 @@
 
 void LLL(mat X, int dim){
     mat G = gs(X, dim);
-    // print_matrix(G, dim);
 
     int k = 1;
     while (k < dim){
