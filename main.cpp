@@ -1,5 +1,3 @@
-#include <iostream>
-#include <string>
 #include <cmath>
 #include <limits>
 #include "linalg.h"
@@ -8,33 +6,42 @@
 
 using namespace std;
 
+// Performs LLL lattice reduction on the provided basis matrix
 void LLL(Matrix& m){
     int dim = m.getDim();
-    Matrix G = GS(m);
+    Matrix G(dim);  // The Gram-Schmidt matrix
+    float coeffs[((dim - 1) >> 1) * dim ];  // Array of Gram-Schmidt coefficients
+
+    GS(m, G, coeffs);
 
     int k = 1;
     while (k < dim){
+
         for (int j = k-1; j>=0; j--){
-            float mu = GetMu(m(k), G(j));
+            float mu = coeffs[coeffInd(k, j)];
 
             // cout << "k=" << k << " " << "j=" << j << " " << "mu=" << mu << endl;
+            // cout << coeffInd(k, j) << ' ' << coeffs[coeffInd(k, j)] << endl;
+            // cout << GetMu(m(k), G(j)) << '\n' << endl;
 
             if (fabsf(mu) > 0.5){
-                vector<float> subvec = m(j) * roundf(mu);
-                m(k) = m(k) - subvec;
-                G = GS(m);
+                m(k) = m(k) - (m(j) * roundf(mu));
+                GS(m, G, coeffs, k);
             }
         }
 
         vector<float> kcheck = G(k);
         vector<float> kchecklow = G(k-1);
-        float mu = GetMu(m(k), G(k-1));
+        float mu = coeffs[coeffInd(k, k-1)];
+
         if ((kcheck * kcheck) > ((0.75 - (mu * mu)) * (kchecklow * kchecklow))){
-            k++;
+            ++k;
         } else {
-            m(k).swap(m(k-1));
-            G = GS(m);
-            k = (k-1 > 1) ? k-1 : 1;
+            swap(m(k), m(k-1));
+            GS(m, G, coeffs, k-1);
+
+            --k;
+            if (k < 1) k = 1;
         }
     }
 }
@@ -51,14 +58,17 @@ int main(int argc, char** argv){
 
     float shortest = std::numeric_limits<float>::max();
     int shrtInd = 0;
+
+    // Iterate through the reduced basis and find the smallest vector
     for (int i=0; i<m.getDim(); i++){
-        vector<float> basisVec = m(i);
+        const vector<float> basisVec = m(i);
         float sqrnorm = basisVec * basisVec;
         if (sqrnorm < shortest){
             shortest = sqrnorm;
             shrtInd = i;
         }
     }
+
     cout << "Shortest Vector is:\n";
     Print(m(shrtInd));
     cout << "\nShortest Length: " << sqrtf(shortest);

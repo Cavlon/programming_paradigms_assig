@@ -2,33 +2,40 @@
 #define __LINALG
 
 #include <vector>
+#include <algorithm> // Contains the transform function for operations on a range
+#include <iostream>
+#include <numeric> // Contains the inner product function
 
 class Matrix
 {
     public:
-        Matrix(size_t d);
+        Matrix(size_t d);   // Constructor
 
-        float& operator()(size_t i, size_t j)
+        float& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
         {
-            return vals[i][j];
+            return vals.at(i).at(j);
         }
 
-        float operator()(size_t i, size_t j) const
+        float operator()(size_t i, size_t j) const  // Constant matrix value retrieval with 2 indices
         {
-            return vals[i][j];
+            return vals.at(i).at(j);
         }
 
-        std::vector<float>& operator()(size_t i){
-            return vals[i];
+        std::vector<float>& operator()(size_t i){   // Vector retrieval
+            return vals.at(i);
         }
 
-        float getDim() const;
+        std::vector<float> operator()(size_t i) const{   // Constant matrix vector retrieval
+            return vals.at(i);
+        }
 
-        friend void Print(const Matrix& m);
+        size_t getDim() const;  // Dimension getter
+
+        friend void Print(const Matrix& m); // Print matrix
 
     private:
         size_t dim;
-        std::vector<std::vector<float>> vals;
+        std::vector<std::vector<float>> vals;   // Vector of vectors storing the matrix values
 };
 
 void Print(const Matrix& m);
@@ -36,6 +43,5 @@ void Print(const std::vector<float>& v);
 float operator*(const std::vector<float>& a, const std::vector<float>& b);
 std::vector<float> operator-(const std::vector<float>& a, const std::vector<float>& b);
 std::vector<float> operator*(const std::vector<float>& a, float b);
-void Swap(std::vector<float>& a, std::vector<float>& b);
 
 #endif

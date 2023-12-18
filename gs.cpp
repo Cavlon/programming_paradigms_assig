@@ -1,30 +1,34 @@
 #include "gs.h"
-#include <iostream>
 
 using namespace std;
 
-vector<float> Proj(const vector<float>& u, const vector<float>& v){
-    float coeff = GetMu(u, v);
-    return v * coeff;
-}
-
+// Get the Gram-Schmidt coefficient
 float GetMu(const vector<float>& u, const vector<float>& v){
-    float norm = v * v;
     float inner = u * v;
+
+    // Avoid division by 0
+    float norm = (inner != 0) ? v * v : 1;
+
     return inner / norm;
 }
 
-Matrix GS(Matrix m){
+// Perform the Gram-Schmidt process without normalisation
+void GS(const Matrix& m, Matrix& G, float coeffs[], size_t startInd){
     size_t dim = m.getDim();
-    Matrix res(dim);
 
-    for (int i = 0; i < dim; i++){
-        res(i) = m(i);
+    for (int i = startInd; i < dim; i++){
+        G(i) = m(i);
+
         for (int j = 0; j < i; j++){
-            vector<float> proj = Proj(m(i), res(j));
-            res(i) = res(i) - proj;
+            float coeff = GetMu(m(i), G(j));
+            coeffs[coeffInd(i, j)] = coeff;
+
+            // Avoid unnecessary calculations if coefficient is zero
+            if (coeff != 0.0f) {
+                vector<float> proj = G(j) * coeff;
+
+                G(i) = G(i) - proj;
+            }
         }
     }
-
-    return res;
 }
