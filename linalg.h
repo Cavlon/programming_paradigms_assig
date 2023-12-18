@@ -1,23 +1,41 @@
 #ifndef __LINALG
 #define __LINALG
 
-typedef struct vector
+#include <vector>
+
+class Matrix
 {
-    float* vals;
-} vec;
+    public:
+        Matrix(size_t d);
 
-typedef struct matrix
-{
-    vec* vecs;
-} mat;
+        float& operator()(size_t i, size_t j)
+        {
+            return vals[i][j];
+        }
 
-mat create_matrix(int dim);
-float dot(float* u, float* v, int dim);
-void copy_vec(float* u, float* v, int dim);
-void sub_vec(float* u, float* v, int dim);
-void swap_vecs(float* u, float* v, int dim);
+        float operator()(size_t i, size_t j) const
+        {
+            return vals[i][j];
+        }
 
-void print_vector(vec X, int dim);
-void print_matrix(mat X, int dim);
+        std::vector<float>& operator()(size_t i){
+            return vals[i];
+        }
+
+        float getDim() const;
+
+        friend void Print(const Matrix& m);
+
+    private:
+        size_t dim;
+        std::vector<std::vector<float>> vals;
+};
+
+void Print(const Matrix& m);
+void Print(const std::vector<float>& v);
+float operator*(const std::vector<float>& a, const std::vector<float>& b);
+std::vector<float> operator-(const std::vector<float>& a, const std::vector<float>& b);
+std::vector<float> operator*(const std::vector<float>& a, float b);
+void Swap(std::vector<float>& a, std::vector<float>& b);
 
 #endif

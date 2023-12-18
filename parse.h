@@ -2,7 +2,6 @@
 #define __PARSE
 #include "linalg.h"
 
-int dimension(int argc);
-mat parse(int argc, char** argv, int dim);
+Matrix Parse(int argc, char** argv);
 
 #endif
