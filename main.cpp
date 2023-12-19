@@ -1,44 +1,67 @@
 #include <cmath>
 #include <limits>
 #include "linalg.h"
-#include "gs.h"
 #include "parse.h"
 
 using namespace std;
 
+// Returns the index of the coefficient corresponding to m(i) and G(j)
+inline size_t coeffInd(float i, int j) {
+    return (((i - 1) * 0.5) * i) + j;
+}
+
 // Performs LLL lattice reduction on the provided basis matrix
 void LLL(Matrix& m){
-    int dim = m.getDim();
-    Matrix G(dim);  // The Gram-Schmidt matrix
+    unsigned int dim = m.getDim();
     float coeffs[((dim - 1) >> 1) * dim ];  // Array of Gram-Schmidt coefficients
-
-    GS(m, G, coeffs);
+    float norms[dim];
 
     int k = 1;
     while (k < dim){
 
+        // Initialisation of stage k
+        norms[k] = m(k) * m(k);
+        if (k == 1) norms[0] = m(0) * m(0);
+
+        for (int j = 0; j < k; ++j){
+            float s = m(k) * m(j);
+            
+            for (int i = 0; i < j; ++i){
+                s -= coeffs[coeffInd(j, i)] * coeffs[coeffInd(k, i)] * norms[i];
+            }
+
+            s = s / norms[j];
+
+            norms[k] -= (s * s) * norms[j];
+
+            coeffs[coeffInd(k, j)] = s;
+        }
+
+        // Size reduction of the kth basis vector
         for (int j = k-1; j>=0; j--){
             float mu = coeffs[coeffInd(k, j)];
 
-            // cout << "k=" << k << " " << "j=" << j << " " << "mu=" << mu << endl;
+            cout << "k=" << k << " " << "j=" << j << " " << "mu=" << mu << endl;
             // cout << coeffInd(k, j) << ' ' << coeffs[coeffInd(k, j)] << endl;
-            // cout << GetMu(m(k), G(j)) << '\n' << endl;
 
             if (fabsf(mu) > 0.5){
-                m(k) = m(k) - (m(j) * roundf(mu));
-                GS(m, G, coeffs, k);
+                mu = roundf(mu);
+                m(k) = m(k) - (m(j) * mu);
+                for (int i = 0; i < j; ++i){
+                    coeffs[coeffInd(k, i)] -= mu * coeffs[coeffInd(j, i)];
+                }
+                coeffs[coeffInd(k, j)] -= mu;
             }
         }
 
-        vector<float> kcheck = G(k);
-        vector<float> kchecklow = G(k-1);
+        // Basis vector swapping or incrementation of stage k
         float mu = coeffs[coeffInd(k, k-1)];
+        cout << "k norm = " << norms[k] << " k-1 norm = " << norms[k-1] << " mu = " << mu << " check = " << (0.75 - (mu * mu)) * norms[k-1] << '\n' << endl;
 
-        if ((kcheck * kcheck) > ((0.75 - (mu * mu)) * (kchecklow * kchecklow))){
+        if (norms[k] > ((0.75 - (mu * mu)) * norms[k-1])){
             ++k;
         } else {
             swap(m(k), m(k-1));
-            GS(m, G, coeffs, k-1);
 
             --k;
             if (k < 1) k = 1;
