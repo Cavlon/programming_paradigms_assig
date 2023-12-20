@@ -11,37 +11,44 @@ class Matrix
     public:
         Matrix(size_t d);   // Constructor
 
-        float& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
+        double& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
         {
             return vals.at(i).at(j);
         }
 
-        float operator()(size_t i, size_t j) const  // Constant matrix value retrieval with 2 indices
+        double operator()(size_t i, size_t j) const  // Constant matrix value retrieval with 2 indices
         {
             return vals.at(i).at(j);
         }
 
-        std::vector<float>& operator()(size_t i){   // Vector retrieval
+        std::vector<double>& operator()(size_t i){   // Vector retrieval
             return vals.at(i);
         }
 
-        std::vector<float> operator()(size_t i) const{   // Constant matrix vector retrieval
+        std::vector<double> operator()(size_t i) const{   // Constant matrix vector retrieval
             return vals.at(i);
         }
 
         size_t getDim() const;  // Dimension getter
 
-        friend void Print(const Matrix& m); // Print matrix
+        size_t getCols() const;  // Dimension getter
+
+        void setCols(size_t newCols);  // Dimension setter
+
+        void Delete(size_t targetInd);
 
     private:
         size_t dim;
-        std::vector<std::vector<float>> vals;   // Vector of vectors storing the matrix values
+        size_t cols;
+        std::vector<std::vector<double>> vals;   // Vector of vectors storing the matrix values
 };
 
 void Print(const Matrix& m);
-void Print(const std::vector<float>& v);
-float operator*(const std::vector<float>& a, const std::vector<float>& b);
-std::vector<float> operator-(const std::vector<float>& a, const std::vector<float>& b);
-std::vector<float> operator*(const std::vector<float>& a, float b);
+void Print(const std::vector<double>& v);
+double operator*(const std::vector<double>& a, const std::vector<double>& b);
+std::vector<double> operator-(const std::vector<double>& a, const std::vector<double>& b);
+std::vector<double> operator*(const std::vector<double>& a, double b);
+void Insert(Matrix& m, size_t sourceInd, const size_t& targetInd);
+bool IsNull(const std::vector<double>& v);
 
 #endif

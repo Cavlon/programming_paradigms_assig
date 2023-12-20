@@ -6,66 +6,84 @@
 using namespace std;
 
 // Returns the index of the coefficient corresponding to m(i) and G(j)
-inline size_t coeffInd(float i, int j) {
-    return (((i - 1) * 0.5) * i) + j;
+inline size_t coeffInd(int i, int j) {
+    return (static_cast<float>((i - 1) * 0.5) * i) + j;
+}
+
+void VectorSwap(Matrix& m, const vector<double>& norms, const vector<double>& coeffs, int& k){
+    double c = m(k) * m(k);
+    size_t i = 0;
+
+    while (i < k){
+        if (0.75 * norms.at(i) <= c){
+            double mu = coeffs.at(coeffInd(k, i));
+            c -= (mu * mu) * norms.at(i);
+            ++i;
+        } else {
+            // cout << "Swap " << k << ' ' << i << '\n' << endl;
+            Insert(m, k, i);
+            k = --i;
+            if (k < 1) k = 1;
+            return;
+        }
+    }
+    ++k;
 }
 
 // Performs LLL lattice reduction on the provided basis matrix
 void LLL(Matrix& m){
-    unsigned int dim = m.getDim();
-    float coeffs[((dim - 1) >> 1) * dim ];  // Array of Gram-Schmidt coefficients
-    float norms[dim];
+    unsigned int cols = m.getCols();
+    vector<double> coeffs(coeffInd(cols, 0));  // Vector of Gram-Schmidt coefficients
+    vector<double> norms(cols);  // Vector of the square norms of each Gram-Schmidt vector
 
     int k = 1;
-    while (k < dim){
+    while (k < cols){
 
         // Initialisation of stage k
-        norms[k] = m(k) * m(k);
-        if (k == 1) norms[0] = m(0) * m(0);
+        norms.at(k) = m(k) * m(k);
+        if (k == 1) norms.at(0) = m(0) * m(0);
 
         for (int j = 0; j < k; ++j){
-            float s = m(k) * m(j);
+            // cout << k << ' ' << j << endl;
+            double s = m(k) * m(j);
             
             for (int i = 0; i < j; ++i){
-                s -= coeffs[coeffInd(j, i)] * coeffs[coeffInd(k, i)] * norms[i];
+                s -= coeffs.at(coeffInd(j, i)) * coeffs.at(coeffInd(k, i)) * norms.at(i);
             }
 
-            s = s / norms[j];
+            s = s / norms.at(j);
 
-            norms[k] -= (s * s) * norms[j];
-
-            coeffs[coeffInd(k, j)] = s;
+            norms.at(k) -= (s * s) * norms.at(j);
+            coeffs.at(coeffInd(k, j)) = s;
         }
 
         // Size reduction of the kth basis vector
         for (int j = k-1; j>=0; j--){
-            float mu = coeffs[coeffInd(k, j)];
+            double mu = coeffs.at(coeffInd(k, j));
 
-            cout << "k=" << k << " " << "j=" << j << " " << "mu=" << mu << endl;
-            // cout << coeffInd(k, j) << ' ' << coeffs[coeffInd(k, j)] << endl;
+            // cout << "k=" << k << " " << "j=" << j << " " << "mu=" << mu << '\n' << endl;
 
             if (fabsf(mu) > 0.5){
-                mu = roundf(mu);
+                mu = roundf(mu);                
                 m(k) = m(k) - (m(j) * mu);
                 for (int i = 0; i < j; ++i){
-                    coeffs[coeffInd(k, i)] -= mu * coeffs[coeffInd(j, i)];
+                    coeffs.at(coeffInd(k, i)) -= mu * coeffs.at(coeffInd(j, i));
                 }
-                coeffs[coeffInd(k, j)] -= mu;
+                coeffs.at(coeffInd(k, j)) -= mu;
             }
         }
 
-        // Basis vector swapping or incrementation of stage k
-        float mu = coeffs[coeffInd(k, k-1)];
-        cout << "k norm = " << norms[k] << " k-1 norm = " << norms[k-1] << " mu = " << mu << " check = " << (0.75 - (mu * mu)) * norms[k-1] << '\n' << endl;
-
-        if (norms[k] > ((0.75 - (mu * mu)) * norms[k-1])){
-            ++k;
-        } else {
-            swap(m(k), m(k-1));
-
-            --k;
-            if (k < 1) k = 1;
+        if (IsNull(m(k))){
+            m.Delete(k);
+            k = 1;
+            --cols;
+            coeffs.resize(coeffInd(cols, 0), 0);
+            norms.resize(cols, 0);
+            continue;
         }
+
+        // Basis vector swapping or incrementation of stage k
+        VectorSwap(m, norms, coeffs, k);
     }
 }
 
@@ -83,8 +101,8 @@ int main(int argc, char** argv){
     int shrtInd = 0;
 
     // Iterate through the reduced basis and find the smallest vector
-    for (int i=0; i<m.getDim(); i++){
-        const vector<float> basisVec = m(i);
+    for (int i=0; i<m.getCols(); i++){
+        const vector<double> basisVec = m(i);
         float sqrnorm = basisVec * basisVec;
         if (sqrnorm < shortest){
             shortest = sqrnorm;

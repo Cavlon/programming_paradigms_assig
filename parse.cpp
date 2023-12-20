@@ -21,7 +21,7 @@ Matrix Parse(int argc, char** argv){
             argv[i]++;
         } 
 
-        float val = std::stof(argv[i]); // Cast each argument as a float
+        double val = std::stod(argv[i]); // Cast each argument as a float
 
         m((i-1) / dim, mod) = val;  //(i-1)/dim is the column and mod is the row of the matrix
     }
