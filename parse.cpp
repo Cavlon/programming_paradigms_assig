@@ -13,11 +13,11 @@ Matrix Parse(int argc, char** argv){
     // Create a square matrix of dimension m
     Matrix m(dim);
 
-    for (size_t i = 1; i < static_cast<size_t>(argc); i++){
+    for (size_t i = 1; i < static_cast<size_t>(argc); ++i){
         int mod = (i-1) % dim;  // The component of the current vector
 
         // Remove the open square bracket of each new vector
-        if (mod == 0){
+        if (*argv[i] == '['){
             argv[i]++;
         } 
 
