@@ -48,7 +48,7 @@ void Print(const Matrix& m);
 void Print(const double* const & v, size_t dim);
 void Print(const std::vector<double>& v);
 double dot(const double* const & a, const double* const & b, const size_t& dim);
-double* sub(const double* const & a, const double* const & b, const size_t& dim);
+double* add(const double* const & a, const double* const & b, const size_t& dim);
 double* scalar(const double* const & a, const double b, const size_t& dim);
 void Insert(Matrix& m, size_t sourceInd, const size_t& targetInd);
 bool IsNull(const double* const & v, const size_t& dim);

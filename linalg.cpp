@@ -77,9 +77,9 @@ double dot(const double* const & a, const double* const & b, const size_t& dim){
     return total;
 }
 
-double* sub(const double* const & a, const double* const & b, const size_t& dim){
+double* add(const double* const & a, const double* const & b, const size_t& dim){
     double* res = new double[dim];
-    transform(a, a+dim, b, res, std::minus<double>());
+    transform(a, a+dim, b, res, std::plus<double>());
     return res;
 }
 
