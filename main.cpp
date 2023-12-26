@@ -11,28 +11,39 @@ inline size_t coeffInd(int i, int j) {
     return (static_cast<float>((i - 1) * 0.5) * i) + j;
 }
 
-void VectorSwap(Matrix& m, const vector<double>& norms, const vector<double>& coeffs, int& k, const size_t& dim){
-    double c = dot(m(k), m(k), dim);
-    size_t i = 0;
+void GaussElim(Matrix& m, size_t& cols, const size_t& dim){
+    size_t lead = 0;    // The dimension being checked for a leading value
 
-    while (i < k){
+    for (size_t i = 0; i < cols; ++i){
 
-        if (0.99 * norms.at(i) <= c){
-            double mu = coeffs.at(coeffInd(k, i));
-            c -= (mu * mu) * norms.at(i);
-            ++i;
-        } else {
-            Insert(m, k, i);
-            k = --i;
-            if (k < 1) k = 1;
-            return;
+        if (lead >= dim) return;    // The entire matrix has been processed
+        size_t k = i;   // Start the scan from the leftmost column that hasn't been processed yet
+
+        while (m(k, lead) == 0){    // Scan each dimension starting from the top left for the first non-zero value
+            ++k;
+            if (k == cols){
+                k = i;
+                ++lead;
+                if (lead == dim) return;
+            }
         }
+        // cout << m(k, lead) << endl;
+        // Print(m);
+
+        swap(m(k), m(i));   // Move the column with the leading value into the leftmost position
+        double lv = m(i, lead);
+        for (size_t j = 0; j < cols; ++j){
+            if (j != i && m(j, lead) != 0){ // If the target is 0 then all the calculation would do is increase its size, so it's pointless
+                m(j) = add(scalar(m(j), m(i, lead), dim), scalar(m(i), -m(j, lead), dim), dim); // Reduce the column while staying within lattice points
+                // Print(m);
+            }
+        }
+        ++lead;
     }
-    ++k;
 }
 
 // Performs LLL lattice reduction on the provided basis matrix
-void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols, const size_t& dim){
+void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols, const size_t& dim, bool deep = true){
 
     int k = 1;
     while (k < cols){
@@ -59,8 +70,15 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
             double mu = coeffs.at(coeffInd(k, j));
             
             if (abs(mu) > 0.5){
-                mu = roundf(mu);            
-                m(k) = add(m(k), scalar(m(j), -mu, dim), dim);
+                mu = roundf(mu);
+
+                for (size_t i = 0; i < dim; ++i){
+                    m(k, i) -= m(j, i) * mu;
+
+                    double epsilon = 1e-13;  // Adjust as needed
+                    m(k, i) = round(m(k, i) / epsilon) * epsilon;
+                }
+
                 for (int i = 0; i < j; ++i){
                     coeffs.at(coeffInd(k, i)) -= mu * coeffs.at(coeffInd(j, i));
                 }
@@ -69,7 +87,8 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
         }
 
         if (IsNull(m(k), dim)){
-            m.Delete(k);
+            swap(m(k), m(cols-1));
+            m.Pop();
             k = 1;
             --cols;
             coeffs.resize(coeffInd(cols, 0), 0);
@@ -78,13 +97,17 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
         }
 
         // Basis vector swapping or incrementation of stage k
-        VectorSwap(m, norms, coeffs, k, dim);
+        if ((0.99 - (coeffs.at(coeffInd(k, k-1)) * coeffs.at(coeffInd(k, k-1)))) * norms.at(k - 1) > norms.at(k)){
+            swap(m(k), m(k-1));
+            --k;
+            if (k < 1) k = 1;
+        } else ++k;
     }
 }
 
 void Enumerate(Matrix& m, const vector<double>& coeffs, const vector<double>& norms, const size_t& cols, const size_t& dim){
 
-    double sqrRad = dot(m(0), m(0), dim);   // Radius for enumeration
+    double sqrRad = norms.at(0);   // Radius for enumeration
 
     double* p = new double[cols+1]();   // Norms of the projections
 
@@ -104,7 +127,7 @@ void Enumerate(Matrix& m, const vector<double>& coeffs, const vector<double>& no
     while (true){
         p[k] = p[k+1] + ((static_cast<double>(u[k]) - c[k]) * (static_cast<double>(u[k]) - c[k]) * norms.at(k));
 
-        if (p[k] < sqrRad){
+        if (p[k] < sqrRad ){
             if (k == 0) {
                 sqrRad = p[k];
                 for (size_t i = 0; i < cols; ++i){
@@ -140,7 +163,13 @@ void Enumerate(Matrix& m, const vector<double>& coeffs, const vector<double>& no
     double* res = new double[dim]();
 
     for (size_t i = 0; i < cols; ++i){
-        res = add(res, scalar(m(i), v[i], dim), dim);
+
+        for (size_t j = 0; j < dim; ++j){
+            res[j] += m(i,j) * v[i]; 
+
+            double epsilon = 1e-13;  // Adjust as needed
+            res[j] = round(res[j] / epsilon) * epsilon;
+        }
     }
 
     delete [] p;
@@ -155,18 +184,7 @@ void Enumerate(Matrix& m, const vector<double>& coeffs, const vector<double>& no
     delete [] res;
 }
 
-chrono::microseconds SVP(int argc, char** argv){
-    auto start = chrono::high_resolution_clock::now();
-
-    Matrix m = Parse(argc, argv);
-
-    const size_t dim = m.getDim();
-    size_t cols = m.getCols();
-    vector<double> coeffs(coeffInd(cols, 0));  // Vector of Gram-Schmidt coefficients
-    vector<double> norms(cols);  // Vector of the square norms of each Gram-Schmidt vector
-
-    // LLL(m, coeffs, norms, cols, dim);
-
+bool Init(const Matrix& m, vector<double>& coeffs, vector<double>& norms, const size_t& cols, const size_t& dim){
     for (size_t k = 1; k < cols; ++k){
         norms.at(k) = dot(m(k), m(k), dim);
         if (k == 1) norms.at(0) = dot(m(0), m(0), dim);
@@ -181,16 +199,47 @@ chrono::microseconds SVP(int argc, char** argv){
             s = s / norms.at(j);
 
             norms.at(k) -= (s * s) * norms.at(j);
+            if (norms.at(k) == 0) return true;  // A vector is linearly dependent
+
             coeffs.at(coeffInd(k, j)) = s;
         }
     }
+    return false;
+}
 
-    // cout << "Reduced Matrix:\n";
+chrono::microseconds SVP(int argc, char** argv){
+    auto start = chrono::high_resolution_clock::now();
+
+    Matrix m = Parse(argc, argv);
+
+    const size_t dim = m.getDim();
+    size_t cols = m.getCols();
+    vector<double> coeffs(coeffInd(cols, 0));  // Vector of Gram-Schmidt coefficients
+    vector<double> norms(cols);  // Vector of the square norms of each Gram-Schmidt vector
+
+    // cout << "Input Matrix:\n";
     // Print(m);
 
-    Enumerate(m, coeffs, norms, cols, dim);
+    // Matrix g(m);
 
-    // cout << "\nShortest Length: " << sqrtf(shortest) << endl;
+    // GaussElim(g, cols, dim);
+
+    bool ld = Init(m, coeffs, norms, cols, dim);
+
+    // cout << "Gauss Matrix:\n";
+    // Print(g);
+
+    if (ld){
+        // cout << "LLL\n" << endl;
+        LLL(m, coeffs, norms, cols, dim);
+        // cout << "Reduced Matrix:\n";
+        // Print(m);
+
+    } else {
+        // cout << "ENUM\n" << endl;     
+    }
+
+    Enumerate(m, coeffs, norms, cols, dim);
 
     auto end = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(end - start);

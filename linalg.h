@@ -5,11 +5,13 @@
 #include <algorithm> // Contains the transform function for operations on a range
 #include <iostream>
 #include <numeric> // Contains the inner product function
+#include <cmath>
 
 class Matrix
 {
     public:
         Matrix(size_t d);   // Constructor
+        Matrix(const Matrix& m);
         ~Matrix();
 
         double& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
@@ -38,6 +40,8 @@ class Matrix
 
         void Delete(size_t targetInd);
 
+        void Pop();
+
     private:
         size_t dim;
         size_t cols;
@@ -49,6 +53,7 @@ void Print(const double* const & v, size_t dim);
 void Print(const std::vector<double>& v);
 double dot(const double* const & a, const double* const & b, const size_t& dim);
 double* add(const double* const & a, const double* const & b, const size_t& dim);
+void AddInPlace(double*& a, const double* const & b, const size_t& dim);
 double* scalar(const double* const & a, const double b, const size_t& dim);
 void Insert(Matrix& m, size_t sourceInd, const size_t& targetInd);
 bool IsNull(const double* const & v, const size_t& dim);
