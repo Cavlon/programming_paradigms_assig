@@ -11,7 +11,6 @@ class Matrix
 {
     public:
         Matrix(size_t d);   // Constructor
-        Matrix(const Matrix& m);
         ~Matrix();
 
         double& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
@@ -36,10 +35,6 @@ class Matrix
 
         size_t getCols() const;  // Dimension getter
 
-        void setCols(size_t newCols);  // Dimension setter
-
-        void Delete(size_t targetInd);
-
         void Pop();
 
     private:
@@ -52,10 +47,6 @@ void Print(const Matrix& m);
 void Print(const double* const & v, size_t dim);
 void Print(const std::vector<double>& v);
 double dot(const double* const & a, const double* const & b, const size_t& dim);
-double* add(const double* const & a, const double* const & b, const size_t& dim);
-void AddInPlace(double*& a, const double* const & b, const size_t& dim);
-double* scalar(const double* const & a, const double b, const size_t& dim);
-void Insert(Matrix& m, size_t sourceInd, const size_t& targetInd);
 bool IsNull(const double* const & v, const size_t& dim);
 
 #endif

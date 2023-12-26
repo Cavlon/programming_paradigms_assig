@@ -11,37 +11,6 @@ inline size_t coeffInd(int i, int j) {
     return (static_cast<float>((i - 1) * 0.5) * i) + j;
 }
 
-void GaussElim(Matrix& m, size_t& cols, const size_t& dim){
-    size_t lead = 0;    // The dimension being checked for a leading value
-
-    for (size_t i = 0; i < cols; ++i){
-
-        if (lead >= dim) return;    // The entire matrix has been processed
-        size_t k = i;   // Start the scan from the leftmost column that hasn't been processed yet
-
-        while (m(k, lead) == 0){    // Scan each dimension starting from the top left for the first non-zero value
-            ++k;
-            if (k == cols){
-                k = i;
-                ++lead;
-                if (lead == dim) return;
-            }
-        }
-        // cout << m(k, lead) << endl;
-        // Print(m);
-
-        swap(m(k), m(i));   // Move the column with the leading value into the leftmost position
-        double lv = m(i, lead);
-        for (size_t j = 0; j < cols; ++j){
-            if (j != i && m(j, lead) != 0){ // If the target is 0 then all the calculation would do is increase its size, so it's pointless
-                m(j) = add(scalar(m(j), m(i, lead), dim), scalar(m(i), -m(j, lead), dim), dim); // Reduce the column while staying within lattice points
-                // Print(m);
-            }
-        }
-        ++lead;
-    }
-}
-
 // Performs LLL lattice reduction on the provided basis matrix
 void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols, const size_t& dim, bool deep = true){
 
@@ -75,8 +44,8 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
                 for (size_t i = 0; i < dim; ++i){
                     m(k, i) -= m(j, i) * mu;
 
-                    double epsilon = 1e-13;  // Adjust as needed
-                    m(k, i) = round(m(k, i) / epsilon) * epsilon;
+                    double roundVal = 1e-13;  // Rounding value
+                    m(k, i) = round(m(k, i) / roundVal) * roundVal;
                 }
 
                 for (int i = 0; i < j; ++i){
@@ -167,8 +136,8 @@ void Enumerate(Matrix& m, const vector<double>& coeffs, const vector<double>& no
         for (size_t j = 0; j < dim; ++j){
             res[j] += m(i,j) * v[i]; 
 
-            double epsilon = 1e-13;  // Adjust as needed
-            res[j] = round(res[j] / epsilon) * epsilon;
+            double roundVal = 1e-13;  // Rounding value
+            res[j] = round(res[j] / roundVal) * roundVal;
         }
     }
 
@@ -220,14 +189,7 @@ chrono::microseconds SVP(int argc, char** argv){
     // cout << "Input Matrix:\n";
     // Print(m);
 
-    // Matrix g(m);
-
-    // GaussElim(g, cols, dim);
-
     bool ld = Init(m, coeffs, norms, cols, dim);
-
-    // cout << "Gauss Matrix:\n";
-    // Print(g);
 
     if (ld){
         // cout << "LLL\n" << endl;
@@ -238,6 +200,7 @@ chrono::microseconds SVP(int argc, char** argv){
     } else {
         // cout << "ENUM\n" << endl;     
     }
+    // LLL(m, coeffs, norms, cols, dim);
 
     Enumerate(m, coeffs, norms, cols, dim);
 

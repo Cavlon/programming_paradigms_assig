@@ -38,16 +38,6 @@ Matrix::Matrix(size_t d): dim(d), cols(d){
     }
 }
 
-Matrix::Matrix(const Matrix& m): dim(m.getDim()), cols(m.getCols()){
-    vals.reserve(cols);
-    for (size_t i = 0; i < cols; ++i){
-        vals.push_back(new double[dim]);
-        for (size_t j = 0; j < dim; ++j){
-            vals.at(i)[j] = m(i,j);
-        }
-    }
-}
-
 Matrix::~Matrix() {
     for (size_t i = 0; i < cols; ++i){
         delete [] vals[i];
@@ -63,24 +53,6 @@ size_t Matrix::getCols() const{
     return cols;
 }
 
-void Matrix::setCols(size_t newCols){
-    cols = newCols;
-}
-
-void Matrix::Delete(size_t targetInd){
-
-    size_t size = vals.size()-1;
-
-    for (size_t i = targetInd; i < size; ++i){
-        swap(vals.at(i), vals.at(i+1));
-    }
-
-    delete [] vals[size];
-    vals.erase(vals.end() - 1);
-
-    --cols;
-}
-
 void Matrix::Pop(){
     delete [] vals.at(cols - 1);
     vals.erase(vals.end() - 1);
@@ -93,39 +65,6 @@ double dot(const double* const & a, const double* const & b, const size_t& dim){
         total += a[i] * b[i];
     }
     return total;
-}
-
-double* add(const double* const & a, const double* const & b, const size_t& dim){
-    double* res = new double[dim];
-    transform(a, a+dim, b, res, std::plus<double>());
-    return res;
-}
-
-void AddInPlace(double*& a, const double* const & b, const size_t& dim){
-    for (size_t i = 0; i < dim; ++i){
-        a[i] += b[i];
-
-        double epsilon = 1e-13;  // Adjust as needed
-        a[i] = round(a[i] / epsilon) * epsilon;
-    }
-}
-
-double* scalar(const double* const & a, const double b, const size_t& dim){
-    double* res = new double[dim];
-
-    transform(a, a + dim, res, [b](double element) {
-        return element * b;
-    });
-
-    return res;
-}
-
-void Insert(Matrix& m, size_t sourceInd, const size_t& targetInd){
-    double* source = m(sourceInd);
-    for (size_t i = sourceInd; i > targetInd; --i){
-        m(i) = m(i - 1);
-    }
-    m(targetInd) = source;
 }
 
 bool IsNull(const double* const & v, const size_t& dim){
