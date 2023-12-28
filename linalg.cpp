@@ -43,33 +43,3 @@ Matrix::~Matrix() {
         delete [] vals[i];
     }
 }
-
-// Getter for dimension member
-size_t Matrix::getDim() const{
-    return dim;
-}
-
-size_t Matrix::getCols() const{
-    return cols;
-}
-
-void Matrix::Pop(){
-    delete [] vals.at(cols - 1);
-    vals.erase(vals.end() - 1);
-    --cols;
-}
-
-double dot(const double* const & a, const double* const & b, const size_t& dim){
-    double total = 0;
-    for (size_t i = 0; i < dim; ++i){
-        total += a[i] * b[i];
-    }
-    return total;
-}
-
-bool IsNull(const double* const & v, const size_t& dim){
-    for (size_t i = 0; i < dim; ++i){
-        if (v[i] != 0) return false;
-    }
-    return true;
-}

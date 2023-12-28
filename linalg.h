@@ -2,9 +2,7 @@
 #define __LINALG
 
 #include <vector>
-#include <algorithm> // Contains the transform function for operations on a range
 #include <iostream>
-#include <numeric> // Contains the inner product function
 #include <cmath>
 
 class Matrix
@@ -31,11 +29,19 @@ class Matrix
             return vals.at(i);
         }
 
-        size_t getDim() const;  // Dimension getter
+        inline size_t getDim() const{
+            return dim;
+        }  // Dimension getter
 
-        size_t getCols() const;  // Dimension getter
+        inline size_t getCols() const{
+            return cols;
+        };  // Column getter
 
-        void Pop();
+        inline void Pop(){
+            delete [] vals.at(cols - 1);
+            vals.erase(vals.end() - 1);
+            --cols;
+        }
 
     private:
         size_t dim;
@@ -46,7 +52,20 @@ class Matrix
 void Print(const Matrix& m);
 void Print(const double* const & v, size_t dim);
 void Print(const std::vector<double>& v);
-double dot(const double* const & a, const double* const & b, const size_t& dim);
-bool IsNull(const double* const & v, const size_t& dim);
+
+inline double dot(const double* const & a, const double* const & b, const size_t& dim){
+    double total = 0;
+    for (size_t i = 0; i < dim; ++i){
+        total += a[i] * b[i];
+    }
+    return total;
+}
+
+inline bool IsNull(const double* const & v, const size_t& dim){
+    for (size_t i = 0; i < dim; ++i){
+        if (v[i] != 0) return false;
+    }
+    return true;
+}
 
 #endif
