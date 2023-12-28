@@ -1,4 +1,12 @@
-#include "svp.h"
+#include <cmath>
+#include "linalg.h"
+#include "parse.h"
+
+inline size_t coeffInd(int i);
+void LLL(Matrix& m, std::vector<double>& coeffs, std::vector<double>& norms, size_t& cols, const size_t& dim);
+double Enumerate(const Matrix& m, const std::vector<double>& coeffs, const std::vector<double>& norms, const size_t& cols, const size_t& dim);
+bool Init(const Matrix& m, std::vector<double>& coeffs, std::vector<double>& norms, const size_t& cols, const size_t& dim);
+double SVP(Matrix& m);
 
 using namespace std;
 
@@ -153,15 +161,11 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
     delete [] c;
     delete [] w;
 
-    cout << "Shortest Vector:\n";
-    Print(res, dim);
-
     double total = 0;
     for (size_t i = 0; i < dim; ++i){
         total += res[i] * res[i];
     }
     total = sqrt(total);
-    cout << total << '\n' << endl;
 
     return total;
 
@@ -207,20 +211,23 @@ double SVP(Matrix& m){
     vector<double> coeffs(coeffInd(cols));  // Vector of Gram-Schmidt coefficients
     vector<double> norms(cols);  // Vector of the square norms of each Gram-Schmidt vector
 
-    cout << "Input Matrix:\n";
-    Print(m);
-
     bool ld = Init(m, coeffs, norms, cols, dim);
 
     if (ld){
-        cout << "LLL\n" << endl;
         LLL(m, coeffs, norms, cols, dim);
-        cout << "Reduced Matrix:\n";
-        Print(m);
-
-    } else {
-        cout << "ENUM\n" << endl;     
     }
 
     return Enumerate(m, coeffs, norms, cols, dim);
+}
+
+int main(int argc, char** argv){
+
+    size_t samples = 100000;
+
+    for (size_t i = 0; i < samples; ++i){
+        Matrix m = Parse(argc, argv);
+        SVP(m);
+    }
+    
+    return 0;
 }

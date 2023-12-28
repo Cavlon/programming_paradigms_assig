@@ -13,20 +13,20 @@ class Matrix
 
         double& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
         {
-            return vals.at(i)[j];
+            return vals[i][j];
         }
 
         double operator()(size_t i, size_t j) const  // Constant matrix value retrieval with 2 indices
         {
-            return vals.at(i)[j];
+            return vals[i][j];
         }
 
         double*& operator()(size_t i){   // Vector retrieval
-            return vals.at(i);
+            return vals[i];
         }
 
         double* operator()(size_t i) const{   // Vector retrieval
-            return vals.at(i);
+            return vals[i];
         }
 
         inline size_t getDim() const{
@@ -38,7 +38,7 @@ class Matrix
         };  // Column getter
 
         inline void Pop(){
-            delete [] vals.at(cols - 1);
+            delete [] vals[cols - 1];
             vals.erase(vals.end() - 1);
             --cols;
         }
