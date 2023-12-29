@@ -7,7 +7,8 @@ Matrix Parse(int argc, char** argv){
 
     // Check if the number of basis vectors = dimension of the basis i.e. a square matrix
     if (dim * dim != argc - 1) {
-        throw std::runtime_error("The number of basis vectors is not equal to the dimension of the basis vectors");
+        std::cerr << "The number of basis vectors is not equal to the dimension of the basis vectors" << std::endl;
+        std::exit(EXIT_FAILURE);
     }
 
     // Create a square matrix of dimension m
@@ -22,7 +23,8 @@ Matrix Parse(int argc, char** argv){
 
         if (mod == 0){
             if (*argv[i] != '['){
-                throw std::runtime_error("Incorrect input format");
+                std::cerr << "Incorrect input format" << std::endl;
+                std::exit(EXIT_FAILURE);
             }
 
             ++colInd;
@@ -31,7 +33,14 @@ Matrix Parse(int argc, char** argv){
             argv[i]++; // Remove the open square bracket of each new vector
         }
 
-        double val = std::stod(argv[i]); // Cast each argument as a float
+
+        double val = 0;
+        try {
+            val = std::stod(argv[i]); // Cast each argument as a float
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Input contains a non-number: " << argv[i] << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
 
         col[mod] = val;  //(i-1)/dim is the column and mod is the row of the matrix
     }

@@ -78,7 +78,7 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& gNorms, vector<doubl
 
         // Basis vector swapping or incrementation of stage k (Lovász’ condition)
         double checkCoeff = coeffs[kCoeffStart + (k - 1)];
-        if ((0.99 - (checkCoeff * checkCoeff)) * gNorms[k - 1] > gNorms[k]){    // High delta chosen to ensure successful termination
+        if ((0.999 - (checkCoeff * checkCoeff)) * gNorms[k - 1] > gNorms[k]){    // High delta chosen to ensure successful termination
             swap(m(k), m(k-1));
             swap(norms[k], norms[k-1]);
             --k;
@@ -176,7 +176,7 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
     delete [] res;
 }
 
-double SVP(Matrix& m){
+void SVP(Matrix& m){
 
     const size_t dim = m.getDim();
     size_t cols = m.getCols();
@@ -197,5 +197,14 @@ double SVP(Matrix& m){
     // cout << "Reduced Matrix:\n";
     // Print(m);
 
-    return Enumerate(m, coeffs, gNorms, cols, dim);
+    double res = Enumerate(m, coeffs, gNorms, cols, dim);
+
+    ofstream outFile("result.txt");
+
+    if (!outFile.is_open()){
+        throw runtime_error("Error opening the result file");
+    }
+
+    outFile << res;
+    outFile.close();
 }

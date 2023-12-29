@@ -1,6 +1,7 @@
 #include "svp.h"
 #include <cassert>
 #include <cstring>
+#include <fstream>
 
 using namespace std;
 
@@ -24,7 +25,19 @@ int main(int argc, char** argv){
 }
 void Test(string input, int args){
     Matrix m = StringToMatrix(input, args);
-    double res = SVP(m);
+    SVP(m);
+
+    ifstream inFile("result.txt");
+
+    if (!inFile.is_open()){
+        throw runtime_error("Error opening the result file");
+    }
+
+    double res;
+    inFile >> res;
+
+    inFile.close();
+
     assert(res == 1);
     cout << input << " Successful\n" << endl;
 }

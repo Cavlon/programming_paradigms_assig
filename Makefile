@@ -8,7 +8,7 @@ all: linalg.o parse.o svp.o main.cpp
 	$(CC) -c -o $@ $<
 
 clean:
-	rm -rf runme.exe test.exe time.exe profile.exe linalg.o parse.o svp.o
+	rm -rf runme.exe test.exe time.exe profile.exe linalg.o parse.o svp.o result.txt
 
 test: linalg.o parse.o svp.o test.cpp
 	$(CC) -o test.exe test.cpp linalg.o parse.o svp.o
