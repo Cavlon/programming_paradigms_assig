@@ -7,7 +7,7 @@ int main(int argc, char** argv){
 
     Matrix m = Parse(argc, argv);
 
-    size_t samples = 1;
+    size_t samples = 1000000;
     chrono::microseconds time (0);
 
     for (size_t i = 0; i < samples; ++i){

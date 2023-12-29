@@ -37,9 +37,9 @@ class Matrix
             return cols;
         };  // Column getter
 
-        inline void Pop(){
-            delete [] vals[cols - 1];
-            vals.erase(vals.end() - 1);
+        inline void Pop(size_t k){
+            delete [] vals[k];
+            vals.erase(vals.begin() + k);
             --cols;
         }
 
@@ -59,13 +59,6 @@ inline double dot(const double* const & a, const double* const & b, const size_t
         total += a[i] * b[i];
     }
     return total;
-}
-
-inline bool IsNull(const double* const & v, const size_t& dim){
-    for (size_t i = 0; i < dim; ++i){
-        if (v[i] != 0) return false;
-    }
-    return true;
 }
 
 #endif

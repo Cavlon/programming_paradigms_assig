@@ -3,9 +3,8 @@
 #include "parse.h"
 
 inline size_t coeffInd(int i);
-void LLL(Matrix& m, std::vector<double>& coeffs, std::vector<double>& norms, size_t& cols, const size_t& dim);
-double Enumerate(const Matrix& m, const std::vector<double>& coeffs, const std::vector<double>& norms, const size_t& cols, const size_t& dim);
-bool Init(const Matrix& m, std::vector<double>& coeffs, std::vector<double>& norms, const size_t& cols, const size_t& dim);
+void LLL(Matrix& m, std::vector<double>& coeffs, std::vector<double>& gNorms, std::vector<double>& norms, size_t& cols, const size_t& dim);
+double Enumerate(const Matrix& m, const std::vector<double>& coeffs, const std::vector<double>& gNorms, const size_t& cols, const size_t& dim);
 double SVP(Matrix& m);
 
 using namespace std;
@@ -16,17 +15,16 @@ inline size_t coeffInd(int i) {
 }
 
 // Performs LLL lattice reduction on the provided basis matrix
-void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols, const size_t& dim){
+void LLL(Matrix& m, vector<double>& coeffs, vector<double>& gNorms, vector<double>& norms, size_t& cols, const size_t& dim){
 
     int k = 1;
     while (k < cols){
 
         // Initialisation of stage k
         double* kVec = m(k);
-        norms[k] = dot(kVec, kVec, dim);
+        gNorms[k] = norms[k];
         if (k == 1){
-            double* firstVec = m(0);
-            norms[0] = dot(firstVec, firstVec, dim);
+            gNorms[0] = norms[0];
         }
 
         size_t kCoeffStart = coeffInd(k);
@@ -35,20 +33,22 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
             
             size_t jCoeffStart = coeffInd(j);
             for (int i = 0; i < j; ++i){
-                s -= coeffs[jCoeffStart + i] * coeffs[kCoeffStart + i] * norms[i];
+                s -= coeffs[jCoeffStart + i] * coeffs[kCoeffStart + i] * gNorms[i];
             }
 
-            s /= norms[j];
+            s /= gNorms[j];
 
-            norms[k] -= (s * s) * norms[j];
-            coeffs[kCoeffStart + j] = s;
+            gNorms[k] -= (s * s) * gNorms[j];   // Calculate the Gram-Schmidt norm of the kth vector
+            coeffs[kCoeffStart + j] = s;    // Calculate all the Gram-Schmidt coefficients of the kth vector with each preceeding vector
         }
 
         // Size reduction of the kth basis vector
+        bool changed = false;
         for (int j = k-1; j>=0; --j){
             double mu = coeffs[kCoeffStart + j];
             
-            if (abs(mu) > 0.5){
+            if (abs(mu) > 0.5){ // If the coefficient would round to 0 then the reduction calculations would be useless
+                changed = true;
                 mu = round(mu);
 
                 double* jVec = m(j);
@@ -56,7 +56,7 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
                     kVec[i] -= jVec[i] * mu;
 
                     double roundVal = 1e-13;  // Rounding value
-                    kVec[i] = round(kVec[i] / roundVal) * roundVal;
+                    kVec[i] = round(kVec[i] / roundVal) * roundVal; // Rounds the value slightly to prevent floating point errors
                 }
 
                 size_t jCoeffStart = coeffInd(j);
@@ -66,30 +66,33 @@ void LLL(Matrix& m, vector<double>& coeffs, vector<double>& norms, size_t& cols,
                 coeffs[kCoeffStart + j] -= mu;
             }
         }
+        if (changed){   // Update the norm only if the vector has been changed
+            norms[k] = dot(kVec, kVec, dim);
+        }
 
-        if (IsNull(kVec, dim)){
-            swap(m(k), m(cols-1));
-            m.Pop();
-            k = 1;
+        if (norms[k] == 0){
+            norms.erase(norms.begin() + k);
+            m.Pop(k);
             --cols;
-            coeffs.resize(coeffInd(cols), 0);
-            norms.resize(cols, 0);
+            coeffs.resize(coeffInd(cols));
+            gNorms.resize(cols);
             continue;
         }
 
         // Basis vector swapping or incrementation of stage k
-        size_t checkCoeff = coeffs[kCoeffStart + (k - 1)];
-        if ((0.99 - (checkCoeff * checkCoeff)) * norms[k - 1] > norms[k]){
+        double checkCoeff = coeffs[kCoeffStart + (k - 1)];
+        if ((0.99 - (checkCoeff * checkCoeff)) * gNorms[k - 1] > gNorms[k]){
             swap(m(k), m(k-1));
+            swap(norms[k], norms[k-1]);
             --k;
             if (k < 1) k = 1;
         } else ++k;
     }
 }
 
-double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<double>& norms, const size_t& cols, const size_t& dim){
+double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<double>& gNorms, const size_t& cols, const size_t& dim){
 
-    double sqrRad = norms[0];   // Radius for enumeration
+    double sqrRad = gNorms[0];   // Radius for enumeration
 
     double* p = new double[cols+1]();   // Norms of the projections
 
@@ -107,7 +110,7 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
     size_t nonZeroInd = 0;  // Last index that didn't have a 0 
 
     while (true){
-        p[k] = p[k+1] + ((static_cast<double>(u[k]) - c[k]) * (static_cast<double>(u[k]) - c[k]) * norms[k]);
+        p[k] = p[k+1] + ((static_cast<double>(u[k]) - c[k]) * (static_cast<double>(u[k]) - c[k]) * gNorms[k]);
 
         if (p[k] < sqrRad ){
             if (k == 0) {
@@ -167,41 +170,13 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
     }
     total = sqrt(total);
 
+    // cout << "Shortest Vector:\n";
+    // Print(res, dim);
+    // cout << total << '\n' << endl;
+
     return total;
 
     delete [] res;
-}
-
-bool Init(const Matrix& m, vector<double>& coeffs, vector<double>& norms, const size_t& cols, const size_t& dim){
-    size_t kCoeffStart = 0;
-    size_t jCoeffStart = 0;
-
-    for (size_t k = 1; k < cols; ++k){
-        double* kVec = m(k);
-        norms[k] = dot(kVec, kVec, dim);
-        if (k == 1){
-            double* firstVec = m(0);
-            norms[0] = dot(firstVec, firstVec, dim);
-        }
-
-        kCoeffStart = coeffInd(k);
-        for (int j = 0; j < k; ++j){
-            double s = dot(kVec, m(j), dim);
-            
-            jCoeffStart = coeffInd(j);
-            for (int i = 0; i < j; ++i){
-                s -= coeffs[jCoeffStart + i] * coeffs[kCoeffStart + i] * norms[i];
-            }
-
-            s = s / norms[j];
-
-            norms[k] -= (s * s) * norms[j];
-            if (norms[k] == 0) return true;  // A vector is linearly dependent
-
-            coeffs[kCoeffStart + j] = s;
-        }
-    }
-    return false;
 }
 
 double SVP(Matrix& m){
@@ -209,25 +184,21 @@ double SVP(Matrix& m){
     const size_t dim = m.getDim();
     size_t cols = m.getCols();
     vector<double> coeffs(coeffInd(cols));  // Vector of Gram-Schmidt coefficients
-    vector<double> norms(cols);  // Vector of the square norms of each Gram-Schmidt vector
+    vector<double> gNorms(cols);  // Vector of the square norms of each Gram-Schmidt vector
+    vector<double> norms(cols); // Vector of the square norms of each basis vector
 
-    bool ld = Init(m, coeffs, norms, cols, dim);
+    // cout << "Input Matrix:\n";
+    // Print(m);
 
-    if (ld){
-        LLL(m, coeffs, norms, cols, dim);
+    for (size_t k = 0; k < cols; ++k){  // Pre-compute all the norms of the basis vectors
+        double* kVec = m(k);
+        norms[k] = dot(kVec, kVec, dim);
     }
 
-    return Enumerate(m, coeffs, norms, cols, dim);
-}
+    LLL(m, coeffs, gNorms, norms, cols, dim);   // Reduce the basis
 
-int main(int argc, char** argv){
+    // cout << "Reduced Matrix:\n";
+    // Print(m);
 
-    size_t samples = 100000;
-
-    for (size_t i = 0; i < samples; ++i){
-        Matrix m = Parse(argc, argv);
-        SVP(m);
-    }
-    
-    return 0;
+    return Enumerate(m, coeffs, gNorms, cols, dim);
 }
