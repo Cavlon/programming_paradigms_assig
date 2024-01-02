@@ -1,11 +1,11 @@
 #ifndef __SVP
 #define __SVP
 
+#include <iostream>
+#include <fstream>
 #include <cmath>
 #include "linalg.h"
 #include "parse.h"
-#include <fstream>
-#include <limits>
 
 inline size_t coeffInd(int i);
 void LLL(Matrix* const m, std::vector<double>* const coeffs, std::vector<double>* const gNorms, std::vector<double>* const norms, size_t* const cols, const size_t& dim);

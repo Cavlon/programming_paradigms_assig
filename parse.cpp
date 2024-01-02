@@ -33,7 +33,6 @@ Matrix Parse(int argc, char** argv) {
             argv[i]++;  // Remove the open square bracket of each new vector
         }
 
-
         double val = 0;
         try {
             val = std::stod(argv[i]);   // Cast each argument as a float
@@ -45,5 +44,6 @@ Matrix Parse(int argc, char** argv) {
 
         col[mod] = val;
     }
+
     return m;
 }

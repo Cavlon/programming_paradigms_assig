@@ -1,15 +1,14 @@
-#include "svp.h"
 #include <cassert>
 #include <cstring>
 #include <fstream>
+#include "svp.h"
 
 using namespace std;
 
 Matrix StringToMatrix(string input, int args);
 void Test(string input, int args);
 
-int main(int argc, char** argv){
-
+int main(int argc, char** argv) {
     cout << "Testing" << endl;
 
     Test("[1 0 0] [0 1 0] [0 0 1]", 10);    // Basic Execution Check
@@ -18,18 +17,17 @@ int main(int argc, char** argv){
 
     Test("[3 0 0] [2 0 0] [1 1 1]", 10);    // Linear Dependence Check
 
-    // 10-Dimensional Lattice Check
-    Test("[1 0 0 0 0 0 0 0 0 0] [0 1 0 0 0 0 0 0 0 0] [0 0 1 0 0 0 0 0 0 0] [0 0 0 1 0 0 0 0 0 0] [0 0 0 0 1 0 0 0 0 0] [0 0 0 0 0 1 0 0 0 0] [0 0 0 0 0 0 1 0 0 0] [0 0 0 0 0 0 0 1 0 0] [0 0 0 0 0 0 0 0 1 0] [0 0 0 0 0 0 0 0 0 1]", 101);
-    
     return 0;
 }
-void Test(string input, int args){
+
+// Run the program and check for correctness
+void Test(string input, int args) {
     Matrix m = StringToMatrix(input, args);
     SVP(&m);
 
     ifstream inFile("result.txt");
 
-    if (!inFile.is_open()){
+    if (!inFile.is_open()) {
         throw runtime_error("Error opening the result file");
     }
 
@@ -42,25 +40,35 @@ void Test(string input, int args){
     cout << input << " Successful\n" << endl;
 }
 
-Matrix StringToMatrix(string input, int args){
+// Simulate terminal input using a string
+Matrix StringToMatrix(string input, int args) {
+    // Simulated argument array
     char** argvals = new char*[args];
+    // Indices in the string to split arguments
     size_t start = 0, end = 0;
 
     size_t index = 1;
+    // Finds the next whitespace
     while ((end = input.find(' ', start)) != string::npos) {
+        // Splits the string into an argument
         string argument = input.substr(start, end - start);
-        if (!argument.empty()){
-            argvals[index] = new char[argument.length()];
-            strcpy(argvals[index], argument.c_str());
+        // Cast the string into a char array
+        if (!argument.empty()) {
+            size_t len = argument.length();
+            argvals[index] = new char[len];
+            // Copy the argument into the argument array
+            snprintf(argvals[index], len+1, "%s", argument.c_str());
         }
         start = end + 1;
         ++index;
     }
 
+    // There won't be a space at the end of the string
     string argument = input.substr(start, input.size() - start);
-    if (!argument.empty()){
-        argvals[index] = new char[argument.length()];
-        strcpy(argvals[index], argument.c_str());
+    if (!argument.empty()) {
+        size_t len = argument.length();
+        argvals[index] = new char[len];
+        snprintf(argvals[index], len+1, "%s", argument.c_str());
     }
 
     return Parse(args, argvals);
