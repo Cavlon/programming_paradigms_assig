@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 }
 void Test(string input, int args){
     Matrix m = StringToMatrix(input, args);
-    SVP(m);
+    SVP(&m);
 
     ifstream inFile("result.txt");
 

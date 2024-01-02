@@ -11,16 +11,6 @@ class Matrix
         Matrix(size_t d);   // Constructor
         ~Matrix();
 
-        double& operator()(size_t i, size_t j)   // Value retrieval with 2 indices
-        {
-            return vals[i][j];
-        }
-
-        double operator()(size_t i, size_t j) const  // Constant matrix value retrieval with 2 indices
-        {
-            return vals[i][j];
-        }
-
         double*& operator()(size_t i){   // Vector retrieval
             return vals[i];
         }

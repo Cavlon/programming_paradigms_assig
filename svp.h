@@ -8,8 +8,9 @@
 #include <limits>
 
 inline size_t coeffInd(int i);
-void LLL(Matrix& m, std::vector<double>& coeffs, std::vector<double>& gNorms, std::vector<double>& norms, size_t& cols, const size_t& dim);
-double Enumerate(const Matrix& m, const std::vector<double>& coeffs, const std::vector<double>& gNorms, const size_t& cols, const size_t& dim);
-void SVP(Matrix& m);
+void LLL(Matrix* const m, std::vector<double>* const coeffs, std::vector<double>* const gNorms, std::vector<double>* const norms, size_t* const cols, const size_t& dim);
+double Enumerate(Matrix* const m, std::vector<double>* const coeffs, std::vector<double>* const gNorms, const size_t& cols, const size_t& dim);
+bool Init(Matrix* const m, std::vector<double>* const coeffs, std::vector<double>* const gNorms, std::vector<double>* const norms, const size_t& cols, const size_t& dim);
+void SVP(Matrix* const m);
 
 #endif
