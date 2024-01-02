@@ -49,10 +49,6 @@ class Matrix
         std::vector<double*> vals;   // Vector of vectors storing the matrix values
 };
 
-void Print(const Matrix& m);
-void Print(const double* const & v, size_t dim);
-void Print(const std::vector<double>& v);
-
 inline double dot(const double* const & a, const double* const & b, const size_t& dim){
     double total = 0;
     for (size_t i = 0; i < dim; ++i){

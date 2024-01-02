@@ -142,6 +142,12 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
             }
         }
     }
+
+    delete [] p;
+    delete [] u;
+    delete [] c;
+    delete [] w;
+
     double* res = new double[dim]();
 
     for (size_t i = 0; i < cols; ++i){  // Compute the shortest vector as a linear combination
@@ -155,11 +161,7 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
         }
     }
 
-    delete [] p;
-    delete [] u;
     delete [] v;
-    delete [] c;
-    delete [] w;
 
     double total = 0;
     for (size_t i = 0; i < dim; ++i){   // Compute the shortest length from the shortest vector
@@ -167,13 +169,38 @@ double Enumerate(const Matrix& m, const vector<double>& coeffs, const vector<dou
     }
     total = sqrt(total);
 
-    cout << "Shortest Vector:\n";
-    Print(res, dim);
-    cout << total << '\n' << endl;
-
     return total;
 
     delete [] res;
+}
+
+bool Init(const Matrix& m, vector<double>& coeffs, vector<double>& gNorms, vector<double>& norms, const size_t& cols, const size_t& dim){
+    for (int k = 0; k < cols; ++k){
+        double* kVec = m(k);
+        gNorms[k] = norms[k];
+        if (k == 1){
+            gNorms[0] = norms[0];
+        }
+
+        size_t kCoeffStart = coeffInd(k);
+        for (int j = 0; j < k; ++j){
+            double s = dot(kVec, m(j), dim);
+            
+            size_t jCoeffStart = coeffInd(j);
+            for (int i = 0; i < j; ++i){
+                s -= coeffs[jCoeffStart + i] * coeffs[kCoeffStart + i] * gNorms[i];
+            }
+
+            s /= gNorms[j];
+
+            gNorms[k] -= (s * s) * gNorms[j];   // Calculate the Gram-Schmidt norm of the kth vector
+
+            if (gNorms[k] == 0) return true;
+            
+            coeffs[kCoeffStart + j] = s;    // Calculate all the Gram-Schmidt coefficients of the kth vector with each preceeding vector
+        }
+    }
+    return false;
 }
 
 void SVP(Matrix& m){
@@ -184,25 +211,23 @@ void SVP(Matrix& m){
     vector<double> gNorms(cols);  // Vector of the square norms of each Gram-Schmidt vector
     vector<double> norms(cols); // Vector of the square norms of each basis vector
 
-    // cout << "Input Matrix:\n";
-    // Print(m);
-
     for (size_t k = 0; k < cols; ++k){  // Pre-compute all the norms of the basis vectors
         double* kVec = m(k);
         norms[k] = dot(kVec, kVec, dim);
     }
 
-    LLL(m, coeffs, gNorms, norms, cols, dim);   // Reduce the basis
-
-    // cout << "Reduced Matrix:\n";
-    // Print(m);
+    if (Init(m, coeffs, gNorms, norms, cols, dim)){
+        LLL(m, coeffs, gNorms, norms, cols, dim);   // Reduce the basis
+    }
 
     double res = Enumerate(m, coeffs, gNorms, cols, dim);
 
     ofstream outFile("result.txt");
 
     if (!outFile.is_open()){
-        throw runtime_error("Error opening the result file");
+        cerr << "Error opening the result file" << endl;
+        outFile.close();
+        exit(EXIT_FAILURE);
     }
 
     outFile << res;

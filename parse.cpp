@@ -42,7 +42,7 @@ Matrix Parse(int argc, char** argv){
             std::exit(EXIT_FAILURE);
         }
 
-        col[mod] = val;  //(i-1)/dim is the column and mod is the row of the matrix
+        col[mod] = val;
     }
     return m;
 }
