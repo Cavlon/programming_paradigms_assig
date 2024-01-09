@@ -12,5 +12,5 @@ clean:
 
 test: linalg.o parse.o svp.o test.cpp
 	$(CC) -o test test.cpp linalg.o parse.o svp.o
-	test
+	./test
 	make clean

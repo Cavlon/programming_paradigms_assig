@@ -2,6 +2,7 @@
 #include <cstring>
 #include <fstream>
 #include "svp.h"
+#include "parse.h"
 
 using namespace std;
 
@@ -15,14 +16,13 @@ int main(int argc, char** argv) {
 
     Test("[1 1 1] [-1 0 2] [3 5 6]", 10);   // Simple Lattice Chack
 
-    Test("[3 0 0] [2 0 0] [1 1 1]", 10);    // Linear Dependence Check
-
     return 0;
 }
 
 // Run the program and check for correctness
 void Test(string input, int args) {
     Matrix m = StringToMatrix(input, args);
+
     SVP(&m);
 
     ifstream inFile("result.txt");

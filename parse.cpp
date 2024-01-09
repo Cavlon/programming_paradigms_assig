@@ -1,14 +1,14 @@
-#include <cmath>
-#include <string>
-#include "linalg.h"
+#include "parse.h"
+
+using namespace std;
 
 Matrix Parse(int argc, char** argv) {
     int dim = static_cast<int>(sqrt(static_cast<double>(argc - 1)));
 
     // Check if the number of basis vectors = dimension
     if (dim * dim != argc - 1) {
-        std::cerr << "Input is not a square basis" << std::endl;
-        std::exit(EXIT_FAILURE);
+        cerr << "Input is not a square basis" << endl;
+        exit(EXIT_FAILURE);
     }
 
     // Create a square matrix of dimension m
@@ -22,24 +22,27 @@ Matrix Parse(int argc, char** argv) {
         size_t mod = (i-1) % dim;  // The component of the current vector
 
         if (mod == 0) {
-            if (*argv[i] != '[') {
-                std::cerr << "Incorrect input format" << std::endl;
-                std::exit(EXIT_FAILURE);
+            // if (*argv[i] != '[') {
+            //     cerr << "Incorrect input format" << endl;
+            //     exit(EXIT_FAILURE);
+            // }
+            if (*argv[i] == '[') {
+                argv[i]++;  // Remove the open square bracket of each new vector
             }
 
             ++colInd;
             col = m(colInd);
 
-            argv[i]++;  // Remove the open square bracket of each new vector
+            // argv[i]++;  // Remove the open square bracket of each new vector
         }
 
         double val = 0;
         try {
-            val = std::stod(argv[i]);   // Cast each argument as a float
-        } catch (const std::invalid_argument& e) {
-            std::cerr << "Input contains a non-number: ";
-            std::cerr << argv[i] << std::endl;
-            std::exit(EXIT_FAILURE);
+            val = stod(argv[i]);   // Cast each argument as a float
+        } catch (const invalid_argument& e) {
+            cerr << "Input contains a non-number: ";
+            cerr << argv[i] << endl;
+            exit(EXIT_FAILURE);
         }
 
         col[mod] = val;
