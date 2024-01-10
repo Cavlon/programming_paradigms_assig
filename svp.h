@@ -7,8 +7,8 @@
 #include "linalg.h"
 
 inline size_t coeffInd(int i);
-double Enumerate(Matrix* const m, double* const coeffs, double* const gNorms, const size_t& dim);
-void Init(Matrix* const m, double* const coeffs, double* const gNorms, double* const norms, const size_t& dim);
+double Enumerate(Matrix* const m, double* const coeffs, double* const gNorms, const double* const vol, const size_t& dim);
+void Init(Matrix* const m, double* const coeffs, double* const gNorms, double* const norms, double* const vol, const size_t& dim);
 void SVP(Matrix* const m);
 
 #endif

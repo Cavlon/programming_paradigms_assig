@@ -22,18 +22,15 @@ Matrix Parse(int argc, char** argv) {
         size_t mod = (i-1) % dim;  // The component of the current vector
 
         if (mod == 0) {
-            // if (*argv[i] != '[') {
-            //     cerr << "Incorrect input format" << endl;
-            //     exit(EXIT_FAILURE);
-            // }
-            if (*argv[i] == '[') {
-                argv[i]++;  // Remove the open square bracket of each new vector
+            if (*argv[i] != '[') {
+                cerr << "Incorrect input format" << endl;
+                exit(EXIT_FAILURE);
             }
 
             ++colInd;
             col = m(colInd);
 
-            // argv[i]++;  // Remove the open square bracket of each new vector
+            argv[i]++;  // Remove the open square bracket of each new vector
         }
 
         double val = 0;
