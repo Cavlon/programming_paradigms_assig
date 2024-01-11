@@ -32,38 +32,37 @@ double Enumerate(Matrix* const m, double* const coeffs,
     // Direction to search through the tree
     unsigned int* w = new unsigned int[dim]();
 
-    // The constant to be multiplied with the volume
-    // This constant is dimension based
-    float constant = 1;
-
+    // Bound the search radius
+    // Bound is an upper bound for the shortest norm
     // Pre-define low-dimensional constants
     if (dim < 11) {
         // Constants for 2-8 are Hermite coefficients
         // Constants for 9 & 10 are Hermite coefficient estimates
-        const float* const vConstants = new float[9]{1.07457, 1.1224621, 1.189208, 1.231145, 1.290491, 1.34591, 1.414214, 1.496879, 1.540542};
-        constant = vConstants[dim-2];   
+        const float* const vConstants = new float[9]{1.154701, 1.259922, 1.414214, 1.515717, 1.665367, 1.811448, 2, 2.240647, 2.373267};
+
+        sqrRad = pow(*vol, 1.0 / static_cast<double>(dim)) * vConstants[dim-2];
+
         delete [] vConstants;
     } else {
         // Calculate an estimate for the Hermite coefficient
-        // calcConst = root(2/PI)
-        constexpr double calcConst = 0.797884560803;
+        // calcConst = 2/PI
+        constexpr double calcConst = 0.636619772368;
 
         double dimfp = static_cast<double>(dim);
-        constant = calcConst * pow(tgamma(2 + (dimfp / 2)), 1.0 / dimfp);
-    }
+        double gamRes = tgamma(2 + (dimfp / 2));
+        gamRes = gamRes * gamRes * (*vol);
 
-    // Bound the search radius
-    // Bound is an upper bound for the shortest norm
-    sqrRad = constant * (*vol);
-    sqrRad *= sqrRad;
+        sqrRad = calcConst * pow(gamRes, 1.0 / dimfp);
+    }
 
     size_t k = 0;  // Level of the enumeration tree
     size_t nonZeroInd = 0;  // Last index that didn't have a 0
 
     while (true) {
 
+        double diff = static_cast<double>(u[k]) - c[k];
         p[k] = p[k+1] +
-        ((static_cast<double>(u[k]) - c[k]) * (static_cast<double>(u[k]) - c[k])
+        (diff * diff
         * gNorms[k]);
 
         if (p[k] < sqrRad) {
@@ -132,13 +131,16 @@ double Enumerate(Matrix* const m, double* const coeffs,
 }
 
 void Init(Matrix* const m, double* const coeffs,
-            double* const gNorms, double* const norms,
-            double* const vol, const size_t& dim) {
+            double* const gNorms, double* const vol,
+            const size_t& dim) {
     for (int k = 0; k < dim; ++k) {
         double* kVec = (*m)(k);
 
+        gNorms[k] = dot(kVec, kVec, dim);
+
         size_t kCoeffStart = coeffInd(k);
         for (int j = 0; j < k; ++j) {
+            //Akin to the Gram-Schmidt process
             double s = dot(kVec, (*m)(j), dim);
 
             size_t jCoeffStart = coeffInd(j);
@@ -169,29 +171,18 @@ void Init(Matrix* const m, double* const coeffs,
 
 void SVP(Matrix* const m) {
     const size_t dim = (*m).getDim();
+
     // Gram-Schmidt coefficients
     double coeffs[coeffInd(dim)];
+
     // Square norms of each Gram-Schmidt vector
     double gNorms[dim];
-    // Square norms of each basis vector
-    double norms[dim];
-
-    // Pre-compute all the norms of the basis vectors
-    for (size_t k = 0; k < dim; ++k) {
-        double* kVec = (*m)(k);
-        double temp = dot(kVec, kVec, dim);
-        norms[k] = temp;
-        gNorms[k] = temp;
-    }
 
     // The volume of the lattice's fundamental parallelepiped
     double* vol = new double;
     *vol = 1;
 
-    Init(m, &coeffs[0], &gNorms[0], &norms[0], vol, dim);
-
-    // Prepare volume for bound computation
-    *vol = pow(*vol, 1.0 / static_cast<double>(dim*2));
+    Init(m, &coeffs[0], &gNorms[0], vol, dim);
 
     double res = Enumerate(m, &coeffs[0], &gNorms[0], vol, dim);
 

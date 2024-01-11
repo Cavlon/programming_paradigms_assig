@@ -12,16 +12,16 @@ void Test(string input, int args);
 int main(int argc, char** argv) {
     cout << "Testing" << endl;
 
-    Test("[1 0 0] [0 1 0] [0 0 1]", 10);    // Basic Execution Check
+    Test("[1 0 0] [0 1 0] [0 0 1]", 3);    // Basic Execution Check
 
-    Test("[1 1 1] [-1 0 2] [3 5 6]", 10);   // Simple Lattice Chack
+    Test("[1 1 1] [-1 0 2] [3 5 6]", 3);   // Simple Lattice Chack
 
     return 0;
 }
 
 // Run the program and check for correctness
-void Test(string input, int args) {
-    Matrix m = StringToMatrix(input, args);
+void Test(string input, int dim) {
+    Matrix m = StringToMatrix(input, dim);
 
     SVP(&m);
 
@@ -41,7 +41,8 @@ void Test(string input, int args) {
 }
 
 // Simulate terminal input using a string
-Matrix StringToMatrix(string input, int args) {
+Matrix StringToMatrix(string input, int dim) {
+    int args = (dim * dim) + 1;
     // Simulated argument array
     char** argvals = new char*[args];
     // Indices in the string to split arguments

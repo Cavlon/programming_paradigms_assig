@@ -23,7 +23,8 @@ Matrix Parse(int argc, char** argv) {
 
         if (mod == 0) {
             if (*argv[i] != '[') {
-                cerr << "Incorrect input format" << endl;
+                cerr << "Incorrect input format at: ";
+                cerr << i-1 << endl;
                 exit(EXIT_FAILURE);
             }
 
