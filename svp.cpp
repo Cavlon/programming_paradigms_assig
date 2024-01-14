@@ -11,7 +11,7 @@ inline size_t coeffInd(int i) {
 
 double Enumerate(Matrix* const m, double* const coeffs,
                 double* const gNorms, const double* const vol
-                , const size_t& dim) {    
+                , const size_t& dim) {
     // Radius for enumeration
     double sqrRad = 0;
 
@@ -38,7 +38,9 @@ double Enumerate(Matrix* const m, double* const coeffs,
     if (dim < 11) {
         // Constants for 2-8 are Hermite coefficients
         // Constants for 9 & 10 are Hermite coefficient estimates
-        const float* const vConstants = new float[9]{1.154701, 1.259922, 1.414214, 1.515717, 1.665367, 1.811448, 2, 2.240647, 2.373267};
+        const float* const vConstants = new float[9]{
+            1.154701, 1.259922, 1.414214, 1.515717,
+            1.665367, 1.811448, 2, 2.240647, 2.373267};
 
         sqrRad = pow(*vol, 1.0 / static_cast<double>(dim)) * vConstants[dim-2];
 
@@ -59,7 +61,6 @@ double Enumerate(Matrix* const m, double* const coeffs,
     size_t nonZeroInd = 0;  // Last index that didn't have a 0
 
     while (true) {
-
         double diff = static_cast<double>(u[k]) - c[k];
         p[k] = p[k+1] +
         (diff * diff
@@ -76,8 +77,15 @@ double Enumerate(Matrix* const m, double* const coeffs,
                 --k;
 
                 c[k] = 0;
+                // Minimise coeffInd calls
+                // Index of first coeff related to vector k
+                size_t ind = coeffInd(k+1) + k;
                 for (size_t i = k + 1; i <= nonZeroInd; ++i) {
-                    c[k] -= coeffs[coeffInd(i) + k] * u[i];
+                    c[k] -= coeffs[ind] * u[i];
+                    // Next index of coeff related to vector k
+                    // It will always be stored i places after
+                    // Where i is the current vector index
+                    ind += i;
                 }
 
                 u[k] = static_cast<int>(round(c[k]));
@@ -114,10 +122,6 @@ double Enumerate(Matrix* const m, double* const coeffs,
         double* iVec = (*m)(i);
         for (size_t j = 0; j < dim; ++j) {
             res[j] += iVec[j] * v[i];
-
-            // Rounds to prevent floating point errors
-            double roundVal = 1e-13;  // Rounding value
-            res[j] = round(res[j] / roundVal) * roundVal;
         }
     }
 
@@ -140,7 +144,7 @@ void Init(Matrix* const m, double* const coeffs,
 
         size_t kCoeffStart = coeffInd(k);
         for (int j = 0; j < k; ++j) {
-            //Akin to the Gram-Schmidt process
+            // Akin to the Gram-Schmidt process
             double s = dot(kVec, (*m)(j), dim);
 
             size_t jCoeffStart = coeffInd(j);
@@ -173,20 +177,22 @@ void SVP(Matrix* const m) {
     const size_t dim = (*m).getDim();
 
     // Gram-Schmidt coefficients
-    double coeffs[coeffInd(dim)];
+    double* coeffs = new double[coeffInd(dim)];
 
     // Square norms of each Gram-Schmidt vector
-    double gNorms[dim];
+    double* gNorms = new double[dim];
 
     // The volume of the lattice's fundamental parallelepiped
     double* vol = new double;
     *vol = 1;
 
-    Init(m, &coeffs[0], &gNorms[0], vol, dim);
+    Init(m, coeffs, gNorms, vol, dim);
 
-    double res = Enumerate(m, &coeffs[0], &gNorms[0], vol, dim);
+    double res = Enumerate(m, coeffs, gNorms, vol, dim);
 
     delete vol;
+    delete [] coeffs;
+    delete [] gNorms;
 
     ofstream outFile("result.txt");
 
