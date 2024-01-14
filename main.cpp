@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
     Matrix m = Parse(argc, argv);
-    SVP(&m);
+    SVP(m);
 
     return 0;
 }

@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 void Test(string input, int dim) {
     Matrix m = StringToMatrix(input, dim);
 
-    SVP(&m);
+    SVP(m);
 
     ifstream inFile("result.txt");
 

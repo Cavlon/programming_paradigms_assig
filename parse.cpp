@@ -50,22 +50,13 @@ Matrix Parse(int argc, char** argv) {
     // Create a square matrix of dimension m
     Matrix m(dim);
 
-    size_t colInd = -1;
-
-    double* col = nullptr;
-
     for (size_t i = 1; i < static_cast<size_t>(argc); ++i) {
-        size_t mod = (i-1) % dim;  // The component of the current vector
-
-        if (mod == 0) {
+        if ((i-1) % dim == 0) {
             if (*argv[i] != '[') {
                 cerr << "Incorrect input format at: ";
                 cerr << i-1 << endl;
                 exit(EXIT_FAILURE);
             }
-
-            ++colInd;
-            col = m(colInd);
 
             argv[i]++;  // Remove the open square bracket of each new vector
         }
@@ -79,7 +70,7 @@ Matrix Parse(int argc, char** argv) {
             exit(EXIT_FAILURE);
         }
 
-        col[mod] = val;
+        m.vals[i-1] = val;
     }
 
     return m;

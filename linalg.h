@@ -7,23 +7,16 @@ class Matrix
         Matrix(int d);   // Constructor
         ~Matrix();
 
-        double*& operator()(int i){   // Vector retrieval
-            return vals[i];
-        }
-
-        double* operator()(int i) const{   // Vector retrieval
-            return vals[i];
-        }
-
-        inline int getDim() const{
-            return dim;
-        }  // Dimension getter
-
-    private:
+        // Dimension of the matrix
         int dim;
-        double** vals;   // Vector of vectors storing the matrix values
+        // 1D array of the matrix values
+        // Stored sequentially as the columns
+        // i.e. [vec1 ..., vec2 ..., vec3 ..., etc.]
+        // Index of 1st component of ith vector = i*dim
+        double* vals;
 };
 
+// The dot product of 2 vectors
 inline double dot(const double* const & a, const double* const & b, const int& dim){
     double total = 0;
     for (int i = 0; i < dim; ++i){

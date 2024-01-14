@@ -9,7 +9,7 @@ inline size_t coeffInd(int i) {
     return (static_cast<float>((i - 1) * 0.5) * i);
 }
 
-double Enumerate(Matrix* const m, double* const coeffs,
+double Enumerate(const Matrix& m, double* const coeffs,
                 double* const gNorms, const double* const vol
                 , const size_t& dim) {
     // Radius for enumeration
@@ -118,11 +118,8 @@ double Enumerate(Matrix* const m, double* const coeffs,
     double* res = new double[dim]();
 
     // Compute the shortest vector as a linear combination
-    for (size_t i = 0; i < dim; ++i) {
-        double* iVec = (*m)(i);
-        for (size_t j = 0; j < dim; ++j) {
-            res[j] += iVec[j] * v[i];
-        }
+    for (size_t i = 0; i < dim*dim; ++i) {
+        res[i % dim] += m.vals[i] * v[i/dim];
     }
 
     delete [] v;
@@ -134,18 +131,18 @@ double Enumerate(Matrix* const m, double* const coeffs,
     return total;
 }
 
-void Init(Matrix* const m, double* const coeffs,
+void Init(const Matrix& m, double* const coeffs,
             double* const gNorms, double* const vol,
             const size_t& dim) {
     for (int k = 0; k < dim; ++k) {
-        double* kVec = (*m)(k);
+        double* kVec = &(m.vals[k*dim]);
 
         gNorms[k] = dot(kVec, kVec, dim);
 
         size_t kCoeffStart = coeffInd(k);
         for (int j = 0; j < k; ++j) {
             // Akin to the Gram-Schmidt process
-            double s = dot(kVec, (*m)(j), dim);
+            double s = dot(kVec, &(m.vals[j*dim]), dim);
 
             size_t jCoeffStart = coeffInd(j);
             for (int i = 0; i < j; ++i) {
@@ -173,8 +170,8 @@ void Init(Matrix* const m, double* const coeffs,
     }
 }
 
-void SVP(Matrix* const m) {
-    const size_t dim = (*m).getDim();
+void SVP(const Matrix& m) {
+    const size_t dim = m.dim;
 
     // Gram-Schmidt coefficients
     double* coeffs = new double[coeffInd(dim)];
